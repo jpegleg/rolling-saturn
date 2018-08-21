@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# saturn CentOS 7 rolling update and visual reporter
+
+# create a lock file
+touch /root/saturn.lock
+
+trapremove () {
+rm -f /root/saturn.lock &
+exit 0
+}
+
+
+rebootcheck () {
+touch /root/yum.list
+touch /root/yum.before
+cp /root/yum.list /root/yum.before
+yum list installed | grep "kernel[.]" > /root/yum.list
+
+change=$(diff /root/yum.list /root/yum.before)
+if [ -z $change ]; then
+         echo "Same code as last run, no reboot.";
+        else
+         shutdown -r now
+fi
+
+}
+
+main () {
+while true; do
+        rebootcheck
+        yum update -y;
+        echo -e "\e[38m S A T U R N ";
+        sleep 2;
+        yum list installed | while read l;do
+                echo -ne "\e[32m$l";
+                sleep 0.2; echo;
+                echo -en "\e[00m$(date +%Y%m%d)";
+                echo -en "\e[35m$(date +%H:%M)";
+                echo -en "\e[33m-$(date +%S:%N)";
+                echo -e "\e[35m $(uname -a | awk '{print $3}')";
+        done;
+        printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+        sleep 1
+        echo -e "\e[38m rolling on\e[36m.\e[31m.\e[32m"
+        sleep 1
+done
+}
+
+
+
+if [ -e /root/saturn.lock ]; then
+  exit
+else
+  trap trapremove HUP TERM INT
+  main
+fi
+
