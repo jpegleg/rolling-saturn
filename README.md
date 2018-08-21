@@ -1,6 +1,6 @@
 # rolling-saturn
 
-Interactive shell script for keeping a CentOS 7 test build at latest and printing yum list output in a loop.
+Interactive shell script for keeping a CentOS 7 (or any yum package system linux build for that matter) test build at latest and printing yum list output in a loop.
 
 This will reboot your machine for the first run if you don't use the install script first.
 
